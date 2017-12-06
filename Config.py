@@ -10,3 +10,4 @@ STORJ_IO_URL = "https://api.storj.io/contacts/"
 SERVER_IP = "127.0.0.1"
 SERVER_PORT = 5000
 SLEEP_TIME = 600
+SERVER_NAME = "server"

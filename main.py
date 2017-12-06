@@ -24,6 +24,7 @@ def getStorjStatusLocal(file_name):
         Get the Local Status
     '''
     result = {}
+    result['name'] = Config.SERVER_NAME
     result['status'] = 'shutdown'
     result['timestamp'] = str(datetime.now())
     with open(file_name, 'r') as f:
