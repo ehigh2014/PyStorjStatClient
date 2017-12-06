@@ -6,13 +6,18 @@ Created on Wed Dec 06 08:47:28 2017
 @email : ehigh2014@163.com
 """
 import os
-import sys
-import signal
 import requests
 import json
 from datetime import datetime
 import time
 import Config
+import logging 
+
+logging.basicConfig(level=logging.INFO,
+                format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
+                datefmt='%a, %d %b %Y %H:%M:%S',
+                filename='client.log',
+                filemode='w')
 
 def getStorjStatusLocal(file_name):
     '''
@@ -71,23 +76,27 @@ def getStorjStatus():
         online_status = getStorjStatusOnline(local_status['node_id'])
         if online_status:
             status = dict(local_status.items() + online_status.items())
+            return status
         else:
-            status = local_status
-    return status
+            return False
+    return False
             
 def sendStorjStatServer(status):
-    url = 'http://' + Config.SERVER_IP +":" + str(Config.SERVER_PORT) + "/hb"
-    r = requests.post(url, data = status)
-    print r.text
+    try:
+        url = 'http://' + Config.SERVER_IP +":" + str(Config.SERVER_PORT) + "/hb"
+        r = requests.post(url, data = status)
+        logging.debug(r.text)
+    except Exception, e:
+        logging.error(e)
+        return False
 
-if __name__ == "__main__":
-    print "PyStorjStatClient running..."
-    def close_sig_handler(signal, frame):
-        sys.exit() 
-    signal.signal(signal.SIGINT, close_sig_handler)
+def client_run():
+    logging.info("PyStorjStatClient running...")
     while True:
         status = getStorjStatus()
-        sendStorjStatServer(status)
+        if status:
+            sendStorjStatServer(status)
         time.sleep(Config.SLEEP_TIME)
 
-
+if __name__ == "__main__":
+    client_run()
