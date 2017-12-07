@@ -60,27 +60,35 @@ def getStorjStatusOnline(node_id):
     '''
         Get the Online Status
     '''
-    url = Config.STORJ_IO_URL + node_id
-    r = requests.get(url)
-    if r.reason == 'OK':
-        resp = json.loads(r.text)
-        return resp
-    else:
+    try:
+        url = Config.STORJ_IO_URL + node_id
+        r = requests.get(url, timeout=15)
+        if r.reason == 'OK':
+            resp = json.loads(r.text)
+            return resp
+        else:
+            return False
+    except Exception, e:
+        logging.error(e)
         return False
 
 def getStorjStatus():
-    os.system("storjshare status > cache.log")
-    status = {}
-    local_status = getStorjStatusLocal("cache.log")
-    os.remove("cache.log")
-    if local_status and ('node_id' in local_status):
-        online_status = getStorjStatusOnline(local_status['node_id'])
-        if online_status:
-            status = dict(local_status.items() + online_status.items())
-            return status
-        else:
-            return False
-    return False
+    try:
+        os.system("storjshare status > cache.log")
+        status = {}
+        local_status = getStorjStatusLocal("cache.log")
+        os.remove("cache.log")
+        if local_status and ('node_id' in local_status):
+            online_status = getStorjStatusOnline(local_status['node_id'])
+            if online_status:
+                status = dict(local_status.items() + online_status.items())
+                return status
+            else:
+                return False
+        return False
+    except Exception, e:
+        logging.error(e)
+        return False
             
 def sendStorjStatServer(status):
     try:
