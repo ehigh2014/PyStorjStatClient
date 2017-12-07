@@ -26,7 +26,7 @@ def getStorjStatusLocal(file_name):
     result = {}
     result['name'] = Config.SERVER_NAME
     result['status'] = 'shutdown'
-    result['timestamp'] = str(datetime.now())
+    result['timestamp'] = str(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
     with open(file_name, 'r') as f:
         lines = f.readlines()
         if len(lines) < 5:
@@ -48,7 +48,7 @@ def getStorjStatusLocal(file_name):
             idx = title.find('Offers')
         ndx = title.find('Delta')
         # do not +1, unreadable code, ???
-        result['allocs'] = int(status[idx+1 : ndx -4].replace(' ', ''))
+        result['allocs'] = status[idx+1 : ndx -4].replace(' ', '')
         # get shared
         idx = title.find('Shared')
         ndx = title.find('Bridges')
@@ -62,7 +62,7 @@ def getStorjStatusOnline(node_id):
     '''
     try:
         url = Config.STORJ_IO_URL + node_id
-        r = requests.get(url, timeout=15)
+        r = requests.get(url)
         if r.reason == 'OK':
             resp = json.loads(r.text)
             return resp
@@ -74,15 +74,16 @@ def getStorjStatusOnline(node_id):
 
 def getStorjStatus():
     try:
+	if os.path.exists("cache.log"):        
+	    os.remove("cache.log")
         os.system("storjshare status > cache.log")
         status = {}
         local_status = getStorjStatusLocal("cache.log")
-        os.remove("cache.log")
         if local_status and ('node_id' in local_status):
             online_status = getStorjStatusOnline(local_status['node_id'])
             if online_status:
                 status = dict(local_status.items() + online_status.items())
-                return status
+		return status
             else:
                 return False
         return False
