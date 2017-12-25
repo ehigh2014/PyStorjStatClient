@@ -50,11 +50,11 @@ def getStorjStatusLocal(file_name):
             idx = title.find('Offers')
         ndx = title.find('Delta')
         # do not +1, unreadable code, ???
-        result['allocs'] = status[idx : ndx -4].replace(' ', '')
+        result['allocs'] = status[idx+1 : ndx -4].replace(' ', '')
         # get shared
         idx = title.find('Shared')
         ndx = title.find('Bridges')
-        result['shared'] = status[idx : ndx -4].replace(' ', '')
+        result['shared'] = status[idx+1 : ndx -4].replace(' ', '')
         return result
     return False
 
@@ -76,8 +76,8 @@ def getStorjStatusOnline(node_id):
 
 def getStorjStatus():
     try:
-	if os.path.exists("cache.log"):        
-	    os.remove("cache.log")
+        if os.path.exists("cache.log"):        
+            os.remove("cache.log")
         os.system("storjshare status > cache.log")
         status = {}
         local_status = getStorjStatusLocal("cache.log")
