@@ -12,6 +12,8 @@ from datetime import datetime
 import time
 import Config
 import logging 
+import redis
+redis = redis.Redis(host=Config.SERVER_IP, port=6379, db=0)
 
 logging.basicConfig(level=logging.INFO,
                 format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
@@ -48,11 +50,11 @@ def getStorjStatusLocal(file_name):
             idx = title.find('Offers')
         ndx = title.find('Delta')
         # do not +1, unreadable code, ???
-        result['allocs'] = status[idx+1 : ndx -4].replace(' ', '')
+        result['allocs'] = status[idx : ndx -4].replace(' ', '')
         # get shared
         idx = title.find('Shared')
         ndx = title.find('Bridges')
-        result['shared'] = status[idx+1 : ndx -4].replace(' ', '')
+        result['shared'] = status[idx : ndx -4].replace(' ', '')
         return result
     return False
 
@@ -93,9 +95,12 @@ def getStorjStatus():
             
 def sendStorjStatServer(status):
     try:
-        url = 'http://' + Config.SERVER_IP +":" + str(Config.SERVER_PORT) + "/hb"
-        r = requests.post(url, data = status)
-        logging.debug(r.text)
+        redis.hset('NodeHB', status['node_id'], status)
+        ts = int(time.time())
+        redis.hset(status['node_id'], ts, status)
+#        url = 'http://' + Config.SERVER_IP +":" + str(Config.SERVER_PORT) + "/hb"
+#        r = requests.post(url, data = status)
+#        logging.debug(r.text)
     except Exception, e:
         logging.error(e)
         return False
